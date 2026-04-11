@@ -1,16 +1,35 @@
 {
-	"name": "template-bun",
-	"module": "index.ts",
+	"name": "autocommit",
+	"version": "0.1.0",
+	"description": "Generate git commit messages from staged diffs using LLM",
+	"module": "src/cli.ts",
 	"type": "module",
-	"private": true,
-  "scripts": {
-    "test": "docker build -f Dockerfile.test -t template-bun-test . && docker run --rm template-bun-test",
-    "format": "biome format --write",
+	"bin": {
+		"autocommit": "./dist/cli.js"
+	},
+	"files": [
+		"dist",
+		"config.schema.json"
+	],
+	"private": false,
+	"scripts": {
+		"build": "bun build src/cli.ts --outdir dist --target node",
+		"test": "docker build -f Dockerfile.test -t autocommit-test . && docker run --rm autocommit-test",
+		"format": "biome format --write",
 		"format:check": "biome format",
 		"lint": "biome lint --fix",
 		"lint:check": "biome lint",
 		"typecheck": "tsc --noEmit"
-  },
+	},
+	"dependencies": {
+		"ai": "^4",
+		"@ai-sdk/anthropic": "^1",
+		"@ai-sdk/openai": "^1",
+		"@ai-sdk/google": "^1",
+		"commander": "^13",
+		"json5": "^2",
+		"minimatch": "^10"
+	},
 	"devDependencies": {
 		"@types/bun": "latest"
 	},
