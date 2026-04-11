@@ -7,6 +7,7 @@ interface DiffResult {
 	filteredDiff: string;
 	excludedFiles: string[];
 	truncatedFiles: string[];
+	stat: string;
 }
 
 function estimateTokens(text: string): number {
@@ -100,5 +101,9 @@ export function getStagedDiff(
 		.map((e) => e.diff)
 		.join("");
 
-	return { filteredDiff, excludedFiles, truncatedFiles };
+	const stat = execSync("git diff --cached --stat", {
+		encoding: "utf-8",
+	}).trim();
+
+	return { filteredDiff, excludedFiles, truncatedFiles, stat };
 }

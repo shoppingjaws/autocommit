@@ -44,10 +44,11 @@ program
 	.option("-y, --yes", "Skip confirmation and commit immediately")
 	.action(async (opts: { yes?: boolean }) => {
 		const config = loadConfig();
-		const { filteredDiff, excludedFiles, truncatedFiles } = getStagedDiff(
-			config.ignorePatterns,
-			config.maxDiffTokens,
-		);
+		const { filteredDiff, excludedFiles, truncatedFiles, stat } =
+			getStagedDiff(config.ignorePatterns, config.maxDiffTokens);
+
+		console.log(stat);
+		console.log("");
 
 		if (truncatedFiles.length > 0) {
 			console.log(
