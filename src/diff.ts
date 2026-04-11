@@ -45,9 +45,7 @@ export function getStagedDiff(
 	}
 
 	if (includedFiles.length === 0) {
-		console.error(
-			"All staged files were excluded by ignorePatterns.",
-		);
+		console.error("All staged files were excluded by ignorePatterns.");
 		process.exit(1);
 	}
 

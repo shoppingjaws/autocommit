@@ -15,7 +15,9 @@ function getApiKey(config: Config): string {
 	const key = process.env[envVar];
 	if (!key) {
 		console.error(`Environment variable ${envVar} is not set.`);
-		console.error("You can specify a different variable name with apiKeyEnvVar.");
+		console.error(
+			"You can specify a different variable name with apiKeyEnvVar.",
+		);
 		process.exit(1);
 	}
 	return key;

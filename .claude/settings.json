@@ -5,31 +5,27 @@
 			"Bash(bun run test)",
 			"Bash(bun test:*)"
 		],
-		"ask": [
-			"Edit(package.json)",
-			"Edit(mise.toml)",
-			"Edit(Dockerfile.test)"
-		]
+		"ask": ["Edit(package.json)", "Edit(mise.toml)", "Edit(Dockerfile.test)"]
 	},
 	"hooks": {
 		"PostToolUse": [
-      {
-        "matcher": "Bash(container-use checkout:*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run format"
-          },
-          {
-            "type": "command",
-            "command": "bun run lint"
-          },
-          {
-            "type": "command",
-            "command": "bun run typecheck"
-          }
-        ]
-      }
-    ]
+			{
+				"matcher": "Bash(container-use checkout:*)",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bun run format"
+					},
+					{
+						"type": "command",
+						"command": "bun run lint"
+					},
+					{
+						"type": "command",
+						"command": "bun run typecheck"
+					}
+				]
+			}
+		]
 	}
 }

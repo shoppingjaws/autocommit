@@ -6,6 +6,16 @@ import { initConfig, loadConfig } from "./config.ts";
 import { getStagedDiff } from "./diff.ts";
 import { generateCommitMessage } from "./generate.ts";
 
+const c = {
+	reset: "\x1b[0m",
+	bold: "\x1b[1m",
+	dim: "\x1b[2m",
+	green: "\x1b[32m",
+	yellow: "\x1b[33m",
+	cyan: "\x1b[36m",
+	red: "\x1b[31m",
+};
+
 function confirm(message: string): Promise<boolean> {
 	const rl = readline.createInterface({
 		input: process.stdin,
@@ -44,19 +54,21 @@ program
 	.option("-y, --yes", "Skip confirmation and commit immediately")
 	.action(async (opts: { yes?: boolean }) => {
 		const config = loadConfig();
-		const { filteredDiff, excludedFiles, truncatedFiles, stat } =
-			getStagedDiff(config.ignorePatterns, config.maxDiffTokens);
+		const { filteredDiff, excludedFiles, truncatedFiles, stat } = getStagedDiff(
+			config.ignorePatterns,
+			config.maxDiffTokens,
+		);
 
-		console.log(stat);
+		console.log(`${c.cyan}${stat}${c.reset}`);
 		console.log("");
 
 		if (truncatedFiles.length > 0) {
 			console.log(
-				`The following files were truncated due to large diff size: ${truncatedFiles.join(", ")}`,
+				`${c.yellow}The following files were truncated due to large diff size: ${truncatedFiles.join(", ")}${c.reset}`,
 			);
 		}
 
-		console.log("Generating commit message...");
+		console.log(`${c.dim}Generating commit message...${c.reset}`);
 		const { message, usage } = await generateCommitMessage(
 			filteredDiff,
 			[...excludedFiles, ...truncatedFiles],
@@ -64,11 +76,13 @@ program
 		);
 
 		console.log("");
-		console.log(message);
+		console.log(`${c.bold}${c.green}${message}${c.reset}`);
 		console.log("");
 
 		// Display token usage
-		console.log(`Tokens: ${usage.promptTokens} in / ${usage.completionTokens} out (${usage.totalTokens} total)`);
+		console.log(
+			`${c.dim}Tokens: ${usage.promptTokens} in / ${usage.completionTokens} out (${usage.totalTokens} total)${c.reset}`,
+		);
 		console.log("");
 
 		if (opts.yes) {
@@ -80,7 +94,7 @@ program
 		if (ok) {
 			commit(message);
 		} else {
-			console.log("Commit cancelled.");
+			console.log(`${c.red}Commit cancelled.${c.reset}`);
 		}
 	});
 
