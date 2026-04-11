@@ -30,7 +30,15 @@ function confirm(message: string): Promise<boolean> {
 }
 
 function commit(message: string): void {
-	execSync(`git commit -m ${JSON.stringify(message)}`, { stdio: "inherit" });
+	try {
+		execSync(`git commit -m ${JSON.stringify(message)}`, { stdio: "pipe" });
+	} catch (e) {
+		const err = e as { stderr?: Buffer };
+		if (err.stderr) {
+			process.stderr.write(err.stderr);
+		}
+		process.exit(1);
+	}
 }
 
 const program = new Command();
