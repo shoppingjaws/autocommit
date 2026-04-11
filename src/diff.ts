@@ -103,7 +103,7 @@ export function getStagedDiff(
 
 	const stat = execSync("git diff --cached --stat", {
 		encoding: "utf-8",
-	}).trim();
+	}).trimEnd();
 
 	return { filteredDiff, excludedFiles, truncatedFiles, stat };
 }
