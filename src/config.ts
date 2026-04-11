@@ -9,10 +9,10 @@ export interface Config {
 	baseURL?: string;
 	language: string;
 	ignorePatterns: string[];
-	/** 入力トークンの単価（USD / 1Mトークン） */
-	inputCostPerMToken?: number;
-	/** 出力トークンの単価（USD / 1Mトークン） */
-	outputCostPerMToken?: number;
+	/** コミットメッセージ生成時のプロンプト。{{diff}} と {{excludedFiles}} がプレースホルダーとして使える */
+	prompt?: string;
+	/** diff全体の最大トークン数（推定値）。超過時は大きいファイルから順に除外 */
+	maxDiffTokens?: number;
 }
 
 const DEFAULT_CONFIG: Config = {
@@ -38,9 +38,9 @@ const DEFAULT_CONFIG_CONTENT = `{
 	// コミットメッセージの言語（ISO 639-1）
 	"language": "en",
 
-	// トークン単価（USD / 1Mトークン）— 設定するとコスト概算を表示
-	// "inputCostPerMToken": 3,
-	// "outputCostPerMToken": 15,
+	// diff全体の最大トークン数（推定）。超過時は大きいファイルから順に除外
+	// デフォルト: 20000
+	// "maxDiffTokens": 20000,
 
 	// 差分から除外するファイルパターン（glob形式）
 	"ignorePatterns": [
@@ -48,7 +48,15 @@ const DEFAULT_CONFIG_CONTENT = `{
 		"package-lock.json",
 		"bun.lock",
 		"pnpm-lock.yaml"
-	]
+	],
+
+	// コミットメッセージ生成時のプロンプト
+	// 使用可能なプレースホルダー:
+	//   {{language}} — 言語設定
+	//   {{diff}} — ステージされた差分
+	//   {{excludedFiles}} — 除外されたファイル一覧（カンマ区切り）
+	//   {{#excludedFiles}}...{{/excludedFiles}} — 除外ファイルがある場合のみ表示されるセクション
+	"prompt": "Generate a git commit message for the following staged changes.\\nThe message MUST follow the Conventional Commits format:\\n  <type>[optional scope]: <description>\\n\\nAvailable types: feat, fix, docs, style, refactor, test, chore, ci, perf\\n\\nWrite the commit message in language: {{language}}\\n\\nRules:\\n- Output ONLY the commit message, nothing else\\n- The subject line must be under 72 characters\\n- Use imperative mood for the description\\n- Do not end the subject line with a period\\n\\n{{#excludedFiles}}\\nNote: The following files were also changed but excluded from the diff: {{excludedFiles}}\\nConsider mentioning these changes if relevant (e.g., dependency updates).\\n{{/excludedFiles}}\\n\\n--- Diff ---\\n{{diff}}"
 }
 `;
 
@@ -82,8 +90,8 @@ export function loadConfig(): Config {
 		baseURL: parsed.baseURL,
 		language: parsed.language ?? DEFAULT_CONFIG.language,
 		ignorePatterns: parsed.ignorePatterns ?? DEFAULT_CONFIG.ignorePatterns,
-		inputCostPerMToken: parsed.inputCostPerMToken,
-		outputCostPerMToken: parsed.outputCostPerMToken,
+		prompt: parsed.prompt,
+		maxDiffTokens: parsed.maxDiffTokens,
 	};
 }
 

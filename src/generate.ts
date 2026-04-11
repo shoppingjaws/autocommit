@@ -34,38 +34,52 @@ function getModel(config: Config) {
 	}
 }
 
+export const DEFAULT_PROMPT = `Generate a git commit message for the following staged changes.
+The message MUST follow the Conventional Commits format:
+  <type>[optional scope]: <description>
+
+Available types: feat, fix, docs, style, refactor, test, chore, ci, perf
+
+Write the commit message in language: {{language}}
+
+Rules:
+- Output ONLY the commit message, nothing else
+- The subject line must be under 72 characters
+- Use imperative mood for the description
+- Do not end the subject line with a period
+
+{{#excludedFiles}}
+Note: The following files were also changed but excluded from the diff: {{excludedFiles}}
+Consider mentioning these changes if relevant (e.g., dependency updates).
+{{/excludedFiles}}
+
+--- Diff ---
+{{diff}}`;
+
 function buildPrompt(
 	diff: string,
 	excludedFiles: string[],
 	language: string,
+	promptTemplate?: string,
 ): string {
-	const lines: string[] = [
-		"Generate a git commit message for the following staged changes.",
-		"The message MUST follow the Conventional Commits format:",
-		"  <type>[optional scope]: <description>",
-		"",
-		"Available types: feat, fix, docs, style, refactor, test, chore, ci, perf",
-		"",
-		`Write the commit message in language: ${language}`,
-		"",
-		"Rules:",
-		"- Output ONLY the commit message, nothing else",
-		"- The subject line must be under 72 characters",
-		"- Use imperative mood for the description",
-		"- Do not end the subject line with a period",
-	];
+	let result = promptTemplate ?? DEFAULT_PROMPT;
+	result = result.replaceAll("{{language}}", language);
+	result = result.replaceAll("{{diff}}", diff);
 
 	if (excludedFiles.length > 0) {
-		lines.push(
+		result = result
+			.replaceAll("{{#excludedFiles}}", "")
+			.replaceAll("{{/excludedFiles}}", "")
+			.replaceAll("{{excludedFiles}}", excludedFiles.join(", "));
+	} else {
+		// excludedFiles セクションを丸ごと除去
+		result = result.replaceAll(
+			/\{\{#excludedFiles\}\}[\s\S]*?\{\{\/excludedFiles\}\}/g,
 			"",
-			`Note: The following files were also changed but excluded from the diff: ${excludedFiles.join(", ")}`,
-			"Consider mentioning these changes if relevant (e.g., dependency updates).",
 		);
 	}
 
-	lines.push("", "--- Diff ---", diff);
-
-	return lines.join("\n");
+	return result.trim();
 }
 
 export interface GenerateResult {
@@ -83,7 +97,12 @@ export async function generateCommitMessage(
 	config: Config,
 ): Promise<GenerateResult> {
 	const model = getModel(config);
-	const prompt = buildPrompt(diff, excludedFiles, config.language);
+	const prompt = buildPrompt(
+		diff,
+		excludedFiles,
+		config.language,
+		config.prompt,
+	);
 
 	const { text, usage } = await generateText({
 		model,

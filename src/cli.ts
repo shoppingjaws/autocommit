@@ -44,14 +44,21 @@ program
 	.option("-y, --yes", "Skip confirmation and commit immediately")
 	.action(async (opts: { yes?: boolean }) => {
 		const config = loadConfig();
-		const { filteredDiff, excludedFiles } = getStagedDiff(
+		const { filteredDiff, excludedFiles, truncatedFiles } = getStagedDiff(
 			config.ignorePatterns,
+			config.maxDiffTokens,
 		);
+
+		if (truncatedFiles.length > 0) {
+			console.log(
+				`差分が大きいため以下のファイルの内容を省略しました: ${truncatedFiles.join(", ")}`,
+			);
+		}
 
 		console.log("コミットメッセージを生成中...");
 		const { message, usage } = await generateCommitMessage(
 			filteredDiff,
-			excludedFiles,
+			[...excludedFiles, ...truncatedFiles],
 			config,
 		);
 
@@ -59,19 +66,8 @@ program
 		console.log(message);
 		console.log("");
 
-		// トークン使用量とコストを表示
-		let usageLine = `Tokens: ${usage.promptTokens} in / ${usage.completionTokens} out (${usage.totalTokens} total)`;
-		if (
-			config.inputCostPerMToken != null &&
-			config.outputCostPerMToken != null
-		) {
-			const cost =
-				(usage.promptTokens * config.inputCostPerMToken +
-					usage.completionTokens * config.outputCostPerMToken) /
-				1_000_000;
-			usageLine += ` | Cost: $${cost.toFixed(6)}`;
-		}
-		console.log(usageLine);
+		// トークン使用量を表示
+		console.log(`Tokens: ${usage.promptTokens} in / ${usage.completionTokens} out (${usage.totalTokens} total)`);
 		console.log("");
 
 		if (opts.yes) {
