@@ -24,7 +24,7 @@ AI SDK（Vercel AI SDK）を使用し、主要3社のモデルに対応する。
 
 ### 対応プロバイダー
 
-| プロバイダー | モデル例 | APIキー環境変数 |
+| プロバイダー | モデル例 | デフォルト環境変数 |
 |---|---|---|
 | Anthropic | claude-sonnet-4-20250514 | `ANTHROPIC_API_KEY` |
 | OpenAI | gpt-4o | `OPENAI_API_KEY` |
@@ -32,7 +32,11 @@ AI SDK（Vercel AI SDK）を使用し、主要3社のモデルに対応する。
 
 ### モデル指定
 
-設定ファイルの `provider` と `model` で指定する。APIキーは環境変数から読み取る。
+設定ファイルの `provider` と `model` で指定する。
+
+### APIキー
+
+APIキーは環境変数から読み取る。デフォルトではプロバイダーごとの標準環境変数名を使用するが、設定ファイルの `apiKeyEnvVar` で任意の環境変数名を指定可能。
 
 ## コミットメッセージフォーマット
 
@@ -129,6 +133,10 @@ $XDG_CONFIG_HOME/autocommit/config.json5
       "default": "claude-sonnet-4-20250514",
       "description": "Model name"
     },
+    "apiKeyEnvVar": {
+      "type": "string",
+      "description": "Environment variable name that holds the API key (e.g. ANTHROPIC_API_KEY)"
+    },
     "language": {
       "type": "string",
       "default": "en",
@@ -155,6 +163,9 @@ $XDG_CONFIG_HOME/autocommit/config.json5
 
   // モデル名
   "model": "claude-sonnet-4-20250514",
+
+  // APIキーを格納する環境変数名（省略時はプロバイダーのデフォルトを使用）
+  // "apiKeyEnvVar": "ANTHROPIC_API_KEY",
 
   // コミットメッセージの言語（ISO 639-1）
   "language": "en",

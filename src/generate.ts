@@ -4,14 +4,35 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import type { Config } from "./config.ts";
 
+const DEFAULT_ENV_VARS: Record<Config["provider"], string> = {
+	anthropic: "ANTHROPIC_API_KEY",
+	openai: "OPENAI_API_KEY",
+	google: "GOOGLE_GENERATIVE_AI_API_KEY",
+};
+
+function getApiKey(config: Config): string {
+	const envVar = config.apiKeyEnvVar ?? DEFAULT_ENV_VARS[config.provider];
+	const key = process.env[envVar];
+	if (!key) {
+		console.error(`環境変数 ${envVar} が設定されていません。`);
+		console.error(
+			"apiKeyEnvVar で別の環境変数名を指定することもできます。",
+		);
+		process.exit(1);
+	}
+	return key;
+}
+
 function getModel(config: Config) {
+	const apiKey = getApiKey(config);
+	const baseURL = config.baseURL;
 	switch (config.provider) {
 		case "anthropic":
-			return createAnthropic()(config.model);
+			return createAnthropic({ apiKey, baseURL })(config.model);
 		case "openai":
-			return createOpenAI()(config.model);
+			return createOpenAI({ apiKey, baseURL })(config.model);
 		case "google":
-			return createGoogleGenerativeAI()(config.model);
+			return createGoogleGenerativeAI({ apiKey, baseURL })(config.model);
 	}
 }
 

@@ -5,6 +5,8 @@ import JSON5 from "json5";
 export interface Config {
 	provider: "anthropic" | "openai" | "google";
 	model: string;
+	apiKeyEnvVar?: string;
+	baseURL?: string;
 	language: string;
 	ignorePatterns: string[];
 }
@@ -22,6 +24,12 @@ const DEFAULT_CONFIG_CONTENT = `{
 
 	// モデル名
 	"model": "claude-sonnet-4-20250514",
+
+	// APIキーを格納する環境変数名（省略時はプロバイダーのデフォルトを使用）
+	// "apiKeyEnvVar": "ANTHROPIC_API_KEY",
+
+	// カスタムベースURL（プロキシやセルフホスト環境向け）
+	// "baseURL": "https://my-proxy.example.com/v1",
 
 	// コミットメッセージの言語（ISO 639-1）
 	"language": "en",
@@ -61,6 +69,8 @@ export function loadConfig(): Config {
 	return {
 		provider: parsed.provider ?? DEFAULT_CONFIG.provider,
 		model: parsed.model ?? DEFAULT_CONFIG.model,
+		apiKeyEnvVar: parsed.apiKeyEnvVar,
+		baseURL: parsed.baseURL,
 		language: parsed.language ?? DEFAULT_CONFIG.language,
 		ignorePatterns: parsed.ignorePatterns ?? DEFAULT_CONFIG.ignorePatterns,
 	};

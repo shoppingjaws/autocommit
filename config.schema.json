@@ -15,6 +15,14 @@
 			"default": "claude-sonnet-4-20250514",
 			"description": "Model name"
 		},
+		"apiKeyEnvVar": {
+			"type": "string",
+			"description": "Environment variable name that holds the API key (e.g. ANTHROPIC_API_KEY)"
+		},
+		"baseURL": {
+			"type": "string",
+			"description": "Custom base URL for the LLM API (e.g. https://my-proxy.example.com/v1)"
+		},
 		"language": {
 			"type": "string",
 			"default": "en",
