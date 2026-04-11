@@ -52,11 +52,11 @@ program
 
 		if (truncatedFiles.length > 0) {
 			console.log(
-				`差分が大きいため以下のファイルの内容を省略しました: ${truncatedFiles.join(", ")}`,
+				`The following files were truncated due to large diff size: ${truncatedFiles.join(", ")}`,
 			);
 		}
 
-		console.log("コミットメッセージを生成中...");
+		console.log("Generating commit message...");
 		const { message, usage } = await generateCommitMessage(
 			filteredDiff,
 			[...excludedFiles, ...truncatedFiles],
@@ -67,7 +67,7 @@ program
 		console.log(message);
 		console.log("");
 
-		// トークン使用量を表示
+		// Display token usage
 		console.log(`Tokens: ${usage.promptTokens} in / ${usage.completionTokens} out (${usage.totalTokens} total)`);
 		console.log("");
 
@@ -76,11 +76,11 @@ program
 			return;
 		}
 
-		const ok = await confirm("このメッセージでコミットしますか？");
+		const ok = await confirm("Commit with this message?");
 		if (ok) {
 			commit(message);
 		} else {
-			console.log("コミットをキャンセルしました。");
+			console.log("Commit cancelled.");
 		}
 	});
 

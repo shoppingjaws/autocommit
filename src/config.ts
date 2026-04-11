@@ -9,9 +9,9 @@ export interface Config {
 	baseURL?: string;
 	language: string;
 	ignorePatterns: string[];
-	/** コミットメッセージ生成時のプロンプト。{{diff}} と {{excludedFiles}} がプレースホルダーとして使える */
+	/** Prompt template for commit message generation. {{diff}} and {{excludedFiles}} are available as placeholders */
 	prompt?: string;
-	/** diff全体の最大トークン数（推定値）。超過時は大きいファイルから順に除外 */
+	/** Maximum estimated token count for the entire diff. Largest files are excluded first when exceeded */
 	maxDiffTokens?: number;
 }
 
@@ -23,26 +23,26 @@ const DEFAULT_CONFIG: Config = {
 };
 
 const DEFAULT_CONFIG_CONTENT = `{
-	// LLMプロバイダー: "anthropic" | "openai" | "google"
+	// LLM provider: "anthropic" | "openai" | "google"
 	"provider": "anthropic",
 
-	// モデル名
+	// Model name
 	"model": "claude-sonnet-4-20250514",
 
-	// APIキーを格納する環境変数名（省略時はプロバイダーのデフォルトを使用）
+	// Environment variable name for the API key (uses provider default if omitted)
 	// "apiKeyEnvVar": "ANTHROPIC_API_KEY",
 
-	// カスタムベースURL（プロキシやセルフホスト環境向け）
+	// Custom base URL (for proxies or self-hosted environments)
 	// "baseURL": "https://my-proxy.example.com/v1",
 
-	// コミットメッセージの言語（ISO 639-1）
+	// Commit message language (ISO 639-1)
 	"language": "en",
 
-	// diff全体の最大トークン数（推定）。超過時は大きいファイルから順に除外
-	// デフォルト: 20000
+	// Maximum estimated token count for the entire diff. Largest files are excluded first when exceeded
+	// Default: 20000
 	// "maxDiffTokens": 20000,
 
-	// 差分から除外するファイルパターン（glob形式）
+	// File patterns to exclude from diff (glob format)
 	"ignorePatterns": [
 		"*.lock",
 		"package-lock.json",
@@ -50,12 +50,12 @@ const DEFAULT_CONFIG_CONTENT = `{
 		"pnpm-lock.yaml"
 	],
 
-	// コミットメッセージ生成時のプロンプト
-	// 使用可能なプレースホルダー:
-	//   {{language}} — 言語設定
-	//   {{diff}} — ステージされた差分
-	//   {{excludedFiles}} — 除外されたファイル一覧（カンマ区切り）
-	//   {{#excludedFiles}}...{{/excludedFiles}} — 除外ファイルがある場合のみ表示されるセクション
+	// Prompt template for commit message generation
+	// Available placeholders:
+	//   {{language}} — language setting
+	//   {{diff}} — staged diff
+	//   {{excludedFiles}} — list of excluded files (comma-separated)
+	//   {{#excludedFiles}}...{{/excludedFiles}} — section shown only when there are excluded files
 	"prompt": "Generate a git commit message for the following staged changes.\\nThe message MUST follow the Conventional Commits format:\\n  <type>[optional scope]: <description>\\n\\nAvailable types: feat, fix, docs, style, refactor, test, chore, ci, perf\\n\\nWrite the commit message in language: {{language}}\\n\\nRules:\\n- Output ONLY the commit message, nothing else\\n- The subject line must be under 72 characters\\n- Use imperative mood for the description\\n- Do not end the subject line with a period\\n\\n{{#excludedFiles}}\\nNote: The following files were also changed but excluded from the diff: {{excludedFiles}}\\nConsider mentioning these changes if relevant (e.g., dependency updates).\\n{{/excludedFiles}}\\n\\n--- Diff ---\\n{{diff}}"
 }
 `;
@@ -75,8 +75,8 @@ export function loadConfig(): Config {
 	const configPath = getConfigPath();
 
 	if (!fs.existsSync(configPath)) {
-		console.error(`設定ファイルが見つかりません: ${configPath}`);
-		console.error("`autocommit init` で設定ファイルを生成してください。");
+		console.error(`Config file not found: ${configPath}`);
+		console.error("Run `autocommit init` to generate a config file.");
 		process.exit(1);
 	}
 
@@ -100,12 +100,12 @@ export function initConfig(force: boolean): void {
 	const configDir = getConfigDir();
 
 	if (fs.existsSync(configPath) && !force) {
-		console.error(`設定ファイルは既に存在します: ${configPath}`);
-		console.error("上書きするには --force を指定してください。");
+		console.error(`Config file already exists: ${configPath}`);
+		console.error("Use --force to overwrite.");
 		process.exit(1);
 	}
 
 	fs.mkdirSync(configDir, { recursive: true });
 	fs.writeFileSync(configPath, DEFAULT_CONFIG_CONTENT, "utf-8");
-	console.log(`設定ファイルを作成しました: ${configPath}`);
+	console.log(`Config file created: ${configPath}`);
 }

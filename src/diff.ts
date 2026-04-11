@@ -26,7 +26,7 @@ export function getStagedDiff(
 		.filter(Boolean);
 
 	if (stagedFiles.length === 0) {
-		console.error("ステージされた変更がありません。");
+		console.error("No staged changes found.");
 		process.exit(1);
 	}
 
@@ -46,12 +46,12 @@ export function getStagedDiff(
 
 	if (includedFiles.length === 0) {
 		console.error(
-			"すべてのステージされたファイルが ignorePatterns により除外されました。",
+			"All staged files were excluded by ignorePatterns.",
 		);
 		process.exit(1);
 	}
 
-	// ファイルごとの差分を取得
+	// Get per-file diffs
 	const perFileDiffs: { file: string; diff: string }[] = includedFiles.map(
 		(file) => ({
 			file,
@@ -64,7 +64,7 @@ export function getStagedDiff(
 	const limit = maxDiffTokens ?? DEFAULT_MAX_DIFF_TOKENS;
 	const truncatedFiles: string[] = [];
 
-	// トークン数の降順でソート（大きいファイルから除外するため）
+	// Sort by token count descending (to exclude largest files first)
 	const sortedBySize = perFileDiffs
 		.map((entry, i) => ({
 			index: i,
@@ -75,24 +75,24 @@ export function getStagedDiff(
 
 	const included = new Set(perFileDiffs.map((_, i) => i));
 
-	// 全体のトークン数が上限を超えている間、最大のファイルから除外
+	// Exclude largest files while total tokens exceed the limit
 	let totalTokens = sortedBySize.reduce((sum, e) => sum + e.tokens, 0);
 
 	for (const entry of sortedBySize) {
 		if (totalTokens <= limit) break;
-		if (included.size <= 1) break; // 最後の1ファイルは残す
+		if (included.size <= 1) break; // Keep at least one file
 
 		included.delete(entry.index);
 		totalTokens -= entry.tokens;
 		truncatedFiles.push(entry.file);
 	}
 
-	// 最後の1ファイルでも超過している場合はエラー
+	// Error if even the last remaining file exceeds the limit
 	if (totalTokens > limit) {
 		console.error(
-			`差分が大きすぎます（推定 ${totalTokens} トークン、上限 ${limit} トークン）。`,
+			`Diff too large (estimated ${totalTokens} tokens, limit ${limit} tokens).`,
 		);
-		console.error("変更を分割するか、maxDiffTokens の値を増やしてください。");
+		console.error("Split your changes or increase maxDiffTokens.");
 		process.exit(1);
 	}
 

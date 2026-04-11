@@ -14,8 +14,8 @@ function getApiKey(config: Config): string {
 	const envVar = config.apiKeyEnvVar ?? DEFAULT_ENV_VARS[config.provider];
 	const key = process.env[envVar];
 	if (!key) {
-		console.error(`環境変数 ${envVar} が設定されていません。`);
-		console.error("apiKeyEnvVar で別の環境変数名を指定することもできます。");
+		console.error(`Environment variable ${envVar} is not set.`);
+		console.error("You can specify a different variable name with apiKeyEnvVar.");
 		process.exit(1);
 	}
 	return key;
@@ -72,7 +72,7 @@ function buildPrompt(
 			.replaceAll("{{/excludedFiles}}", "")
 			.replaceAll("{{excludedFiles}}", excludedFiles.join(", "));
 	} else {
-		// excludedFiles セクションを丸ごと除去
+		// Remove the entire excludedFiles section
 		result = result.replaceAll(
 			/\{\{#excludedFiles\}\}[\s\S]*?\{\{\/excludedFiles\}\}/g,
 			"",
