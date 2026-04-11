@@ -1,6 +1,6 @@
 {
 	"name": "@shoppingjaws/autocommit",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Generate git commit messages from staged diffs using LLM",
 	"module": "src/cli.ts",
 	"type": "module",
