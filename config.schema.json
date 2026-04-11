@@ -33,18 +33,10 @@
 			"items": {
 				"type": "string"
 			},
-			"default": [
-				"*.lock",
-				"package-lock.json",
-				"bun.lock",
-				"pnpm-lock.yaml"
-			],
+			"default": ["*.lock", "package-lock.json", "bun.lock", "pnpm-lock.yaml"],
 			"description": "Glob patterns for files to exclude from diff"
 		}
 	},
-	"required": [
-		"provider",
-		"model"
-	],
+	"required": ["provider", "model"],
 	"additionalProperties": false
 }

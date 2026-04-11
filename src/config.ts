@@ -9,6 +9,10 @@ export interface Config {
 	baseURL?: string;
 	language: string;
 	ignorePatterns: string[];
+	/** 入力トークンの単価（USD / 1Mトークン） */
+	inputCostPerMToken?: number;
+	/** 出力トークンの単価（USD / 1Mトークン） */
+	outputCostPerMToken?: number;
 }
 
 const DEFAULT_CONFIG: Config = {
@@ -34,6 +38,10 @@ const DEFAULT_CONFIG_CONTENT = `{
 	// コミットメッセージの言語（ISO 639-1）
 	"language": "en",
 
+	// トークン単価（USD / 1Mトークン）— 設定するとコスト概算を表示
+	// "inputCostPerMToken": 3,
+	// "outputCostPerMToken": 15,
+
 	// 差分から除外するファイルパターン（glob形式）
 	"ignorePatterns": [
 		"*.lock",
@@ -46,7 +54,8 @@ const DEFAULT_CONFIG_CONTENT = `{
 
 function getConfigDir(): string {
 	const xdgConfigHome =
-		process.env.XDG_CONFIG_HOME || path.join(process.env.HOME ?? "~", ".config");
+		process.env.XDG_CONFIG_HOME ||
+		path.join(process.env.HOME ?? "~", ".config");
 	return path.join(xdgConfigHome, "autocommit");
 }
 
@@ -59,7 +68,7 @@ export function loadConfig(): Config {
 
 	if (!fs.existsSync(configPath)) {
 		console.error(`設定ファイルが見つかりません: ${configPath}`);
-		console.error('`autocommit init` で設定ファイルを生成してください。');
+		console.error("`autocommit init` で設定ファイルを生成してください。");
 		process.exit(1);
 	}
 
@@ -73,6 +82,8 @@ export function loadConfig(): Config {
 		baseURL: parsed.baseURL,
 		language: parsed.language ?? DEFAULT_CONFIG.language,
 		ignorePatterns: parsed.ignorePatterns ?? DEFAULT_CONFIG.ignorePatterns,
+		inputCostPerMToken: parsed.inputCostPerMToken,
+		outputCostPerMToken: parsed.outputCostPerMToken,
 	};
 }
 

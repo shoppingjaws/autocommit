@@ -44,13 +44,34 @@ program
 	.option("-y, --yes", "Skip confirmation and commit immediately")
 	.action(async (opts: { yes?: boolean }) => {
 		const config = loadConfig();
-		const { filteredDiff, excludedFiles } = getStagedDiff(config.ignorePatterns);
+		const { filteredDiff, excludedFiles } = getStagedDiff(
+			config.ignorePatterns,
+		);
 
 		console.log("コミットメッセージを生成中...");
-		const message = await generateCommitMessage(filteredDiff, excludedFiles, config);
+		const { message, usage } = await generateCommitMessage(
+			filteredDiff,
+			excludedFiles,
+			config,
+		);
 
 		console.log("");
 		console.log(message);
+		console.log("");
+
+		// トークン使用量とコストを表示
+		let usageLine = `Tokens: ${usage.promptTokens} in / ${usage.completionTokens} out (${usage.totalTokens} total)`;
+		if (
+			config.inputCostPerMToken != null &&
+			config.outputCostPerMToken != null
+		) {
+			const cost =
+				(usage.promptTokens * config.inputCostPerMToken +
+					usage.completionTokens * config.outputCostPerMToken) /
+				1_000_000;
+			usageLine += ` | Cost: $${cost.toFixed(6)}`;
+		}
+		console.log(usageLine);
 		console.log("");
 
 		if (opts.yes) {

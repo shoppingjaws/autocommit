@@ -15,9 +15,7 @@ function getApiKey(config: Config): string {
 	const key = process.env[envVar];
 	if (!key) {
 		console.error(`環境変数 ${envVar} が設定されていません。`);
-		console.error(
-			"apiKeyEnvVar で別の環境変数名を指定することもできます。",
-		);
+		console.error("apiKeyEnvVar で別の環境変数名を指定することもできます。");
 		process.exit(1);
 	}
 	return key;
@@ -36,7 +34,11 @@ function getModel(config: Config) {
 	}
 }
 
-function buildPrompt(diff: string, excludedFiles: string[], language: string): string {
+function buildPrompt(
+	diff: string,
+	excludedFiles: string[],
+	language: string,
+): string {
 	const lines: string[] = [
 		"Generate a git commit message for the following staged changes.",
 		"The message MUST follow the Conventional Commits format:",
@@ -66,18 +68,34 @@ function buildPrompt(diff: string, excludedFiles: string[], language: string): s
 	return lines.join("\n");
 }
 
+export interface GenerateResult {
+	message: string;
+	usage: {
+		promptTokens: number;
+		completionTokens: number;
+		totalTokens: number;
+	};
+}
+
 export async function generateCommitMessage(
 	diff: string,
 	excludedFiles: string[],
 	config: Config,
-): Promise<string> {
+): Promise<GenerateResult> {
 	const model = getModel(config);
 	const prompt = buildPrompt(diff, excludedFiles, config.language);
 
-	const { text } = await generateText({
+	const { text, usage } = await generateText({
 		model,
 		prompt,
 	});
 
-	return text.trim();
+	return {
+		message: text.trim(),
+		usage: {
+			promptTokens: usage.promptTokens,
+			completionTokens: usage.completionTokens,
+			totalTokens: usage.promptTokens + usage.completionTokens,
+		},
+	};
 }
